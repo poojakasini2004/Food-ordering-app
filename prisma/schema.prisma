@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+  role     String // "STAFF" or "MANAGER"
+}
+
+model MenuCategory {
+  id           String     @id @default(uuid())
+  name         String
+  displayOrder Int
+  menuItems    MenuItem[]
+}
+
+model MenuItem {
+  id          String       @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  categoryId  String
+  isAvailable Boolean      @default(true)
+  imageUrl    String?
+  category    MenuCategory @relation(fields: [categoryId], references: [id])
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  customerName    String
+  email           String
+  phone           String
+  deliveryAddress String
+  status          String      @default("PENDING") // "PENDING", "ACTIVE", "COMPLETED", "CANCELLED"
+  totalAmount     Float
+  createdAt       DateTime    @default(now())
+  orderItems      OrderItem[]
+}
+
+model OrderItem {
+  id               String   @id @default(uuid())
+  orderId          String
+  menuItemId       String
+  itemNameSnapshot String
+  quantity         Int
+  unitPrice        Float
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem         MenuItem @relation(fields: [menuItemId], references: [id])
+}
